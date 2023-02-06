@@ -272,12 +272,12 @@ class TLIBFlexray(Structure):
             datalen = self.FActualPayloadLength
         for i in range(datalen):
             self.FData[i] = FData[i]
-    def set_data(data):
-        datalen = len(FData)
+    def set_data(self,data):
+        datalen = len(data)
         if datalen>self.FActualPayloadLength:
             datalen = self.FActualPayloadLength
         for i in range(datalen):
-            self.FData[i] = FData[i]
+            self.FData[i] = data[i]
         
 
 class TLibFlexray_controller_config(Structure):
