@@ -573,7 +573,7 @@ def tsflexray_set_controller_frametrigger(AHandle: c_size_t, ANodeIndex: c_uint,
 def tsflexray_cmdreq(AHandle: c_size_t, ANodeIndex: c_int, Action: c_int, ATriggerIndex: c_int, ARegAddr: c_uint32,
                      ARegVal: c_uint32, ATimeoutMs: c_int):
     r = dll.tsflexray_cmdreq(AHandle, ANodeIndex, Action,
-                             ATriggerIndex, ARegAddr, byref(ARegVal), ATimeoutMs)
+                             ATriggerIndex, ARegAddr,   (ARegVal), ATimeoutMs)
     return r
 
 
@@ -608,14 +608,14 @@ def tsfifo_read_flexray_buffer_frame_count(AHandle: c_size_t, AIdxChn: c_int, AC
     return r
 
 
-def tsfifo_read_flexray_tx_buffer_frame_coun(AHandle: c_size_t, AIdxChn: c_int, ACount: c_int):
-    r = dll.tsfifo_read_flexray_tx_buffer_frame_coun(
+def tsfifo_read_flexray_tx_buffer_frame_count(AHandle: c_size_t, AIdxChn: c_int, ACount: c_int):
+    r = dll.tsfifo_read_flexray_tx_buffer_frame_count(
         AHandle, AIdxChn, byref(ACount))
     return r
 
 
-def tsfifo_read_flexray_rx_buffer_frame_coun(AHandle: c_size_t, AIdxChn: c_int, ACount: c_int):
-    r = dll.tsfifo_read_flexray_rx_buffer_frame_coun(
+def tsfifo_read_flexray_rx_buffer_frame_count(AHandle: c_size_t, AIdxChn: c_int, ACount: c_int):
+    r = dll.tsfifo_read_flexray_rx_buffer_frame_count(
         AHandle, AIdxChn, byref(ACount))
     return r
 
