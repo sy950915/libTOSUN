@@ -1589,7 +1589,9 @@ class TSMasterDevice():
     def __init__(self, configs: [dict], is_recv_error: bool = False, hwserial: bytes = b'',
                 is_include_tx: bool = False,
                 is_start_recv: bool = False,
-                dbc: str = ''):
+                dbc: str = '',
+                filter:dict={}):
+        self.filter = filter
         self.__include_error_message = is_recv_error
         self.include_own_message = is_include_tx
         self.start_receive = is_start_recv
@@ -1685,6 +1687,13 @@ class TSMasterDevice():
 
     def on_tx_rx_event(self, ACAN):
         if self.start_receive:
+            msg_channel = self.filter.get('msg_channel',None)
+            msg_id = self.filter.get('msg_id',None)
+            # pass_no = self.filter.get('pass',True)
+            if msg_channel != None and ACAN.contents.FIdxChn != msg_channel:
+                return
+            if msg_id != None and ACAN.contents.FIdentifier != msg_id:
+                return
             if ACAN.contents.FProperties == 0x80:
                 msg = Message(timestamp=blf_start_time + float(ACAN.contents.FTimeUs) / 1000000,
                             arbitration_id=0xFFFFFFFF,
