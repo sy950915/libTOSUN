@@ -852,12 +852,18 @@ def tsfifo_clear_lin_receive_buffers(AHandle: c_size_t, CHN: CHANNEL_INDEX):
     return dll.tsfifo_clear_lin_receive_buffers(AHandle, CHN)
 
 
-# 回调事件匄1 7
+# 回调事件
 PCAN = POINTER(TLIBCAN)
 if 'windows' in _os.lower():
     OnTx_RxFUNC_CAN = WINFUNCTYPE(None, PCAN)
 else:
     OnTx_RxFUNC_CAN = CFUNCTYPE(None, PCAN)
+
+PFlexray = POINTER(TLIBFlexray)
+if 'windows' in _os.lower():
+    OnTx_RxFUNC_Flexray = WINFUNCTYPE(None, PFlexray)
+else:
+    OnTx_RxFUNC_Flexray = CFUNCTYPE(None, PFlexray)
 
 PLIN = POINTER(TLIBLIN)
 if 'windows' in _os.lower():
@@ -1053,30 +1059,66 @@ def tsapp_unregister_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
     r = dll.tscan_unregister_event_can(AHandle, ACallback)
     return r
 
+def tsapp_register_pretx_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
+    return dll.tscan_register_pretx_event_can(AHandle, ACallback)
+
+def tsapp_unregister_pretx_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
+    return dll.tscan_unregister_pretx_event_can(AHandle, ACallback)
+
+def tsapp_register_pretx_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
+    return dll.tscan_register_pretx_event_canfd(AHandle, ACallback)
+
+def tsapp_unregister_pretx_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
+    return dll.tscan_unregister_pretx_event_canfd(AHandle, ACallback)
+
 
 # 注册canfd发  接收事仄1 7
 def tsapp_register_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
     r = dll.tscan_register_event_canfd(AHandle, ACallback)
     return r
 
-
 # 注销canfd发  接收事仄1 7
 def tsapp_unregister_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
-    r = dll.tscan_unregister_event_can(AHandle, ACallback)
+    r = dll.tscan_unregister_event_canfd(AHandle, ACallback)
+    return r
+
+def tsapp_register_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    r = dll.tsflexray_register_event_flexray(AHandle, ACallback)
     return r
 
 
-# 注册lin发  接收事仄1 7
+# 注销flexray发  接收
+def tsapp_unregister_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    r = dll.tsflexray_unregister_event_flexray(AHandle, ACallback)
+    return r
+
+def tsapp_register_pretx_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    r = dll.tsflexray_register_pretx_event_flexray(AHandle, ACallback)
+    return r
+
+
+# 注销flexray预发送事件
+def tsapp_unregister_pretx_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    r = dll.tsflexray_unregister_pretx_event_flexray(AHandle, ACallback)
+    return r
+
+
+# 注册lin发 接事件
 def tsapp_register_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
     r = dll.tslin_register_event_lin(AHandle, ACallback)
     return r
 
 
-# 注销lin发  接收事仄1 7
+# 注销lin发 接事件
 def tsapp_unregister_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
     r = dll.tslin_unregister_event_lin(AHandle, ACallback)
     return r
 
+def tsapp_register_pretx_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
+    return dll.tslin_register_pretx_event_can(AHandle, ACallback)
+
+def tsapp_unregister_pretx_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
+    return dll.tslin_unregister_pretx_event_lin(AHandle, ACallback)
 
 # normal_rx_msg = queue.Queue(maxsize=0)
 # error_rx_msg = queue.Queue(maxsize=0)
