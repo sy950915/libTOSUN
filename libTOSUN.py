@@ -264,7 +264,7 @@ class TLIBFlexray(Structure):
     def __init__(self,FIdxChn=0,FSlotId=1,FChannelMask=1,FActualPayloadLength=32,FCycleNumber=1,FData=[]):
         self.FIdxChn = FIdxChn
         self.FSlotId = FSlotId
-        self.FChannelMask = FChannelMask
+        self.FChannelMask = FChannelMask|0x04
         self.FActualPayloadLength = FActualPayloadLength
         self.FCycleNumber = FCycleNumber    
         datalen = len(FData)
