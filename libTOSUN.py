@@ -25,7 +25,7 @@ if 'windows' in _os.lower():
     _is_windows = True
     if _arch == '32bit':
         # os.add_dll_directory(os.path.join(_curr_path, 'windows/x86'))
-        os.chdir(os.path.join(_curr_path, 'windows/x86'))
+        # os.chdir(os.path.join(_curr_path, 'windows/x86'))
         _lib_path = os.path.join(_curr_path, 'windows/x86/libTSCAN.dll')
     else:
         # os.add_dll_directory(os.path.join(_curr_path, 'windows/x64'))
@@ -364,7 +364,9 @@ class TLibFlexray_controller_config(Structure):
         self.CAS_RX_LOW_MAX = 87
         self.SPEED = 0
         self.WAKE_UP_SYMBOL_RX_WINDOW = 301
+        # ecu
         self.WAKE_UP_PATTERN = 43
+        
         self.WAKE_UP_SYMBOL_RX_IDLE = 59
         self.WAKE_UP_SYMBOL_RX_LOW = 55
         self.WAKE_UP_SYMBOL_TX_IDLE = 180
@@ -391,18 +393,24 @@ class TLibFlexray_controller_config(Structure):
         self.MICRO_PER_CYCLE = 200000
         self.Macro_Per_Cycle = 5000
         self.SYNC_NODE_MAX = 8
+        # ECU
         self.MICRO_INITIAL_OFFSET_A = 31
         self.MICRO_INITIAL_OFFSET_B = 31
         self.MACRO_INITIAL_OFFSET_A = 11
         self.MACRO_INITIAL_OFFSET_B = 11
+
         self.N_I_T = 44
         self.OFFSET_CORRECTION_START = 4981
+        #ECU
         self.DELAY_COMPENSATION_A = 1
         self.DELAY_COMPENSATION_B = 1
+
         self.CLUSTER_DRIFT_DAMPING = 2
+        # ECU
         self.DECODING_CORRECTION = 48
         self.ACCEPTED_STARTUP_RANGE = 212
         self.MAX_DRIFT = 601
+
         self.STATIC_SLOT = 61
         self.NUMBER_OF_STATIC_SLOTS = 60
         self.MINISLOT = 10
@@ -410,10 +418,12 @@ class TLibFlexray_controller_config(Structure):
         self.DYNAMIC_SLOT_IDLE_PHASE = 0
         self.ACTION_POINT_OFFSET = 9
         self.MINISLOT_ACTION_POINT_OFFSET = 3
+        # ECU
         self.OFFSET_CORRECTION_OUT = 378
         self.RATE_CORRECTION_OUT = 601
         self.EXTERN_OFFSET_CORRECTION = 0
         self.EXTERN_RATE_CORRECTION = 0
+
         self.config1_byte = 1
         # if
         self.config_byte = 0xc
@@ -439,7 +449,6 @@ class TLibTrigger_def(Structure):
                 # bit7: 帧类型:0 - 静态，1 - 动态
                 ("recv", c_uint8),
                 ]
-
     def __init__(self, frame_idx=0, slot_id=1, cycle_code=1, config_byte=0x33):
         self.frame_idx = frame_idx
         self.slot_id = slot_id
