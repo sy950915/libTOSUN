@@ -1,12 +1,5 @@
-'''
-Author: seven 865762826@qq.com
-Date: 2023-03-08 18:45:18
-LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-03-22 14:36:09
-FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\__init__.py
-Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
-'''
 from .libTOSUN import *
+import atexit
 _curr_path = os.path.dirname(__file__)
 _arch, _os = platform.architecture()
 _os = platform.system()
@@ -22,3 +15,15 @@ elif 'linux' in _os.lower():
     _is_linux = True
     if _arch == '64bit':
         from .linux.parse_xml import *
+
+initialize_lib_tsmaster(True,False)
+
+
+
+
+def close():
+    tsapp_disconnect_all()
+    finalize_lib_tscan()
+
+
+atexit.register(close)

@@ -25,7 +25,7 @@ if 'windows' in _os.lower():
     _is_windows = True
     if _arch == '32bit':
         # os.add_dll_directory(os.path.join(_curr_path, 'windows/x86'))
-        # os.chdir(os.path.join(_curr_path, 'windows/x86'))
+        os.chdir(os.path.join(_curr_path, 'windows/x86'))
         _lib_path = os.path.join(_curr_path, 'windows/x86/libTSCAN.dll')
     else:
         # os.add_dll_directory(os.path.join(_curr_path, 'windows/x64'))
@@ -654,8 +654,8 @@ def tscan_get_device_info(ADeviceCount: c_uint64):
 
 
 # 断开指定硬件连接
-def tsapp_disconnect_AHandle(AHandle: c_size_t):
-    r = dll.tscan_disconnect(AHandle)
+def tsapp_disconnect_by_handle(AHandle: c_size_t):
+    r = dll.tscan_disconnect_by_handle(AHandle)
     return r
 
 
@@ -1646,7 +1646,7 @@ class TSMasterDevice():
         self.__include_error_message = is_recv_error
         self.include_own_message = is_include_tx
         self.start_receive = is_start_recv
-        initialize_lib_tsmaster(True, False)
+        # initialize_lib_tsmaster(True, False)
         if not isinstance(hwserial, bytes):
             hwserial = bytes(hwserial)
         ret = tsapp_connect(hwserial, self.HwHandle)
@@ -1806,5 +1806,5 @@ class TSMasterDevice():
         return self.error_code[ACode]
 
     def shut_down(self):
-        tsapp_disconnect_all()
-        finalize_lib_tscan()
+        tsapp_disconnect_by_handle(self.HwHandle)
+        
