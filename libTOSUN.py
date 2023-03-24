@@ -1417,6 +1417,7 @@ class TSMasterDevice():
     Rate_baudrate = []
     data_baudrate = []
     enable_120hm = []
+    configs = {}
     __hw_isconnect = False
     include_own_message = False
     __include_error_message = False
@@ -1640,20 +1641,56 @@ class TSMasterDevice():
     def __init__(self, configs: [dict], is_recv_error: bool = False, hwserial: bytes = b'',
                 is_include_tx: bool = False,
                 is_start_recv: bool = False,
-                dbc: str = '',
+                dbc: bytes = b'',
                 filter:dict={}):
         self.filter = filter
         self.__include_error_message = is_recv_error
         self.include_own_message = is_include_tx
         self.start_receive = is_start_recv
+        self.configs = configs
+        self.hwserial = hwserial
+        self.dbc = dbc
         # initialize_lib_tsmaster(True, False)
-        if not isinstance(hwserial, bytes):
-            hwserial = bytes(hwserial)
-        ret = tsapp_connect(hwserial, self.HwHandle)
+        if isinstance(hwserial, str):
+            self.hwserial = hwserial.encode('utf8')
+        self.connect()
+        # ret = tsapp_connect(hwserial, self.HwHandle)
+        # if ret == 0 or ret == 5:
+        #     self.__hw_isconnect = True
+        #     for index, congfig in enumerate(configs):
+        #         self.channel_list.append(
+        #             congfig['FChannel'] if 'FChannel' in congfig else index)
+
+        #         self.Rate_baudrate.append(
+        #             congfig['rate_baudrate'] if 'rate_baudrate' in congfig else 500)
+
+        #         self.data_baudrate.append(
+        #             congfig['data_baudrate'] if 'data_baudrate' in congfig else 2000)
+
+        #         self.enable_120hm.append(
+        #             congfig['enable_120hm'] if 'enable_120hm' in congfig else True)
+
+        #         if 'is_fd' in congfig and congfig['is_fd']:
+        #             tsapp_configure_baudrate_canfd(self.HwHandle, self.channel_list[index], self.Rate_baudrate[index],
+        #                                         self.data_baudrate[index],
+        #                                         TLIBCANFDControllerType.lfdtISOCAN,
+        #                                         TLIBCANFDControllerMode.lfdmNormal,
+        #                                         self.enable_120hm[index])
+        #         else:
+        #             tsapp_configure_baudrate_can(self.HwHandle, self.channel_list[index], self.Rate_baudrate[index],
+        #                                         self.enable_120hm[index])
+        #     self.ONRxTx_Event = OnTx_RxFUNC_CANFD(self.on_tx_rx_event)
+        #     ret = tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
+        #     self.db = DBC_parse(dbcfile=dbc)
+        # else:
+        #     self.__hw_isconnect = False
+        #     raise "HW CONNECT FAILED"
+
+    def connect(self):
+        ret = tsapp_connect(self.hwserial, self.HwHandle)
         if ret == 0 or ret == 5:
             self.__hw_isconnect = True
-            for index, congfig in enumerate(configs):
-
+            for index, congfig in enumerate(self.configs):
                 self.channel_list.append(
                     congfig['FChannel'] if 'FChannel' in congfig else index)
 
@@ -1676,11 +1713,14 @@ class TSMasterDevice():
                     tsapp_configure_baudrate_can(self.HwHandle, self.channel_list[index], self.Rate_baudrate[index],
                                                 self.enable_120hm[index])
             self.ONRxTx_Event = OnTx_RxFUNC_CANFD(self.on_tx_rx_event)
-            ret = tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
-            self.db = DBC_parse(dbcfile=dbc)
+            tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
+            self.start_recv_time = time.perf_counter()
+            if self.dbc!=b'':
+                self.db = DBC_parse(dbcfile=self.dbc)
         else:
             self.__hw_isconnect = False
             raise "HW CONNECT FAILED"
+
 
     def load_dbc(self, dbc):
         self.db.load_dbc(dbc)
@@ -1735,7 +1775,7 @@ class TSMasterDevice():
     def recv(self, timeout: Optional[float] = 0.1) -> Message:
         msg = self.msg_list.get() if not self.msg_list.empty() else None
         return msg
-
+    
     def on_tx_rx_event(self, ACAN):
         if self.start_receive:
             msg_channel = self.filter.get('msg_channel',None)
@@ -1807,4 +1847,5 @@ class TSMasterDevice():
 
     def shut_down(self):
         tsapp_disconnect_by_handle(self.HwHandle)
+        self.msg_list.queue.clear()
         
