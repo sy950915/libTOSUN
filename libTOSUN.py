@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-# @Time   :2022/12/08 11:16
-# @Author :SEVEN
-# @File   :TScanAPI.py
-# @Comment:使用python64 libTSCANApiOnLinux.dll libTSH.dll (x64);
-# 使用python32 libTSCANApiOnLinux.dll libTSH.dll libLog.dll binlog.dll(x32)
-# ------------------------------------------------
+'''
+Author: seven 865762826@qq.com
+Date: 2022-12-24 12:29:39
+LastEditors: seven 865762826@qq.com
+LastEditTime: 2023-03-28 13:33:33
+FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
+'''
+
 import time
 from ctypes import *
 import copy
@@ -666,7 +667,9 @@ def tsapp_disconnect_all():
 
 
 # 设置can参数
-def tsapp_configure_baudrate_can(ADeviceHandle: c_size_t, AChnIdx: CHANNEL_INDEX, ARateKbps: c_double, A120: A120):
+def tsapp_configure_baudrate_can(ADeviceHandle: c_size_t, AChnIdx: CHANNEL_INDEX, ARateKbps: c_double,A120: A120):
+    if not isinstance(ARateKbps, c_double):
+        ARateKbps = c_double(ARateKbps)
     r = dll.tscan_config_can_by_baudrate(
         ADeviceHandle, AChnIdx, ARateKbps, A120)
     return r
@@ -1638,15 +1641,16 @@ class TSMasterDevice():
     onRXTX_EVENT = OnTx_RxFUNC_CANFD()
     start_receive = False
 
-    def __init__(self, configs: [dict], is_recv_error: bool = False, hwserial: bytes = b'',
+    def __init__(self, configs: [dict], hwserial: bytes = b'',
+                # is_recv_error: bool = False,
                 is_include_tx: bool = False,
-                is_start_recv: bool = False,
+                # is_start_recv: bool = False,
                 dbc: bytes = b'',
                 filter:dict={}):
         self.filter = filter
-        self.__include_error_message = is_recv_error
+        # self.__include_error_message = is_recv_error
         self.include_own_message = is_include_tx
-        self.start_receive = is_start_recv
+        # self.start_receive = is_start_recv
         self.configs = configs
         self.hwserial = hwserial
         self.dbc = dbc
@@ -1710,11 +1714,10 @@ class TSMasterDevice():
                                                 TLIBCANFDControllerMode.lfdmNormal,
                                                 self.enable_120hm[index])
                 else:
-                    tsapp_configure_baudrate_can(self.HwHandle, self.channel_list[index], self.Rate_baudrate[index],
-                                                self.enable_120hm[index])
-            self.ONRxTx_Event = OnTx_RxFUNC_CANFD(self.on_tx_rx_event)
-            tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
-            self.start_recv_time = time.perf_counter()
+                    tsapp_configure_baudrate_can(self.HwHandle, self.channel_list[index], c_double(self.Rate_baudrate[index]),self.enable_120hm[index])
+            # self.ONRxTx_Event = OnTx_RxFUNC_CANFD(self.on_tx_rx_event)
+            # tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
+            # self.start_recv_time = time.perf_counter()
             if self.dbc!=b'':
                 self.db = DBC_parse(dbcfile=self.dbc)
         else:
@@ -1772,9 +1775,18 @@ class TSMasterDevice():
         else:
             raise "HW CONNECT FAILED"
 
-    def recv(self, timeout: Optional[float] = 0.1) -> Message:
-        msg = self.msg_list.get() if not self.msg_list.empty() else None
-        return msg
+    def recv(self, channel,timeout: Optional[float] = 0.1) -> Message:
+        start_time = time.perf_counter()
+        while time.perf_counter() - start_time<= timeout:
+            ACANFD = (TLIBCANFD*1)()
+            buffersize = c_int32(1)
+            tsapp_receive_canfd_msgs(self.HwHandle,ACANFD,buffersize,channel,1 if self.include_own_message else 0)
+            if buffersize.value==1:
+                return tosun_convert_msg(ACANFD[0])
+        return None
+        return self.msg_list.get() if not self.msg_list.empty() else None
+
+        
     
     def on_tx_rx_event(self, ACAN):
         if self.start_receive:
