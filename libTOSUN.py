@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-03-28 13:33:33
+LastEditTime: 2023-03-31 18:06:31
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 
@@ -1561,15 +1561,16 @@ if 'windows' in _os.lower():
 else:
     OnTx_RxFUNC_CANFD = CFUNCTYPE(None, PCANFD)
 
+ps64 = POINTER(c_int64)
 if 'windows' in _os.lower():
-    On_Connect_FUNC = WINFUNCTYPE(None, POINTER(c_int64))
+    On_Connect_FUNC = WINFUNCTYPE(None,ps64 )
 else:
-    On_Connect_FUNC = CFUNCTYPE(None, POINTER(c_int64))
+    On_Connect_FUNC = CFUNCTYPE(None, ps64)
 
 if 'windows' in _os.lower():
-    On_disConnect_FUNC = WINFUNCTYPE(None, POINTER(c_int64))
+    On_disConnect_FUNC = WINFUNCTYPE(None, ps64)
 else:
-    On_disConnect_FUNC = CFUNCTYPE(None, POINTER(c_int64))
+    On_disConnect_FUNC = CFUNCTYPE(None, ps64)
 
 blfName = ''
 blf_start_time = 0
@@ -1677,6 +1678,8 @@ def tslog_start_online_replay(handle: c_size_t, PathFileName: str, include_rx: b
         handle (c_size_t): tsapp_connect retrun handle
         PathFileName (str): blf path name Absolute path
         include_rx (bool): include rx
+    exampel:
+        tslog_start_online_replay(handle,"/home/1.blf",False)
     """
     messagelist = []
     with can.BLFReader(PathFileName) as Reader_file:
@@ -1753,86 +1756,397 @@ def Reader_file(PathName, convertType: CONVERTTYPE):
 
 # 注册连接事件
 def tscan_register_event_connected(ACallback: On_Connect_FUNC):
+    """
+    register connect event
+    What happens when the device is successfully connected
+    
+    Args:
+        ACallback (On_Connect_FUNC): function
+
+    Returns:
+        error code
+    example:
+        def on_connect(ps64):
+            print("connect")
+            
+        on_connect_event = On_Connect_FUNC(on_connect)
+        tscan_register_event_connected(on_connect_event)
+    """
     ret = dll.tscan_register_event_connected(ACallback)
     return ret
 
 
 # 注册断开事件
-def tscan_register_event_disconnected(ACallback: On_Connect_FUNC):
+def tscan_register_event_disconnected(ACallback: On_disConnect_FUNC):
+    """
+    register disconnect event
+    What happens when the device is successfully disconnected
+    Args:
+        ACallback (On_disConnect_FUNC): function
+
+    Returns:
+        error code
+    example:
+        def on_disconnect(ps64):
+            print("disconnect")
+            
+        on_disconnect_event = On_disConnect_FUNC(on_disconnect)
+        tscan_register_event_disconnected(on_disconnect_event)
+    """
     ret = dll.tscan_register_event_disconnected(ACallback)
     return ret
 
 
 # 注册can发接
 def tsapp_register_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
+    """
+    register can event
+    Triggered when there is message transmission on the bus
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CAN): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            print(ACAN.contents.FData[0])
+            
+        on_can_event = OnTx_RxFUNC_CAN(on_can)
+        tsapp_register_event_can(Handle,on_can_event)
+    """
     r = dll.tscan_register_event_can(AHandle, ACallback)
     return r
 
 
 # 注销can发接
 def tsapp_unregister_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
+    """
+    unregister can event
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CAN): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            print(ACAN.contents.FData[0])
+            
+        on_can_event = OnTx_RxFUNC_CAN(on_can)
+        tsapp_unregister_event_can(Handle,on_can_event)
+    """
     r = dll.tscan_unregister_event_can(AHandle, ACallback)
     return r
 
 def tsapp_register_pretx_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
+    """
+    register pre tx can event
+    Sending a message will trigger and can modify the message data
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CAN): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            ACAN.contents.FData[0] = 1 #All message FData[0] will only be 1
+            if ACAN.contents.FIdentifier == 1:
+                ACAN.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_can_event = OnTx_RxFUNC_CAN(on_can)
+        tsapp_register_event_can(Handle,on_can_event)
+    """
     return dll.tscan_register_pretx_event_can(AHandle, ACallback)
 
 def tsapp_unregister_pretx_event_can(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CAN):
+    """
+    unregister pre tx can event
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CAN): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            ACAN.contents.FData[0] = 1 #All message FData[0] will only be 1
+            if ACAN.contents.FIdentifier == 1:
+                ACAN.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_can_event = OnTx_RxFUNC_CAN(on_can)
+        tsapp_unregister_event_can(Handle,on_can_event)
+    """
     return dll.tscan_unregister_pretx_event_can(AHandle, ACallback)
 
 def tsapp_register_pretx_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
+    """
+    register pre tx canfd event
+    Sending a message will trigger and can modify the message data
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CANFD): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            ACAN.contents.FData[0] = 1 #All message FData[0] will only be 1
+            if ACAN.contents.FIdentifier == 1:
+                ACAN.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_can_event = OnTx_RxFUNC_CANFD(on_can)
+        tsapp_register_pretx_event_canfd(Handle,on_can_event)
+    """
     return dll.tscan_register_pretx_event_canfd(AHandle, ACallback)
 
 def tsapp_unregister_pretx_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
+    """
+    unregister pre tx canfd event
+
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CANFD): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            ACAN.contents.FData[0] = 1 #All message FData[0] will only be 1
+            if ACAN.contents.FIdentifier == 1:
+                ACAN.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_can_event = OnTx_RxFUNC_CANFD(on_can)
+        tsapp_unregister_pretx_event_canfd(Handle,on_can_event)
+    """
     return dll.tscan_unregister_pretx_event_canfd(AHandle, ACallback)
 
 
 # 注册canfd发接
 def tsapp_register_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
+    """
+    register canfd event
+    Triggered when there is message transmission on the bus
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CANFD): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            print(ACAN.contents.FData[0])
+            
+        on_can_event = OnTx_RxFUNC_CANFD(on_can)
+        tsapp_register_event_canfd(Handle,on_can_event)
+    """
     r = dll.tscan_register_event_canfd(AHandle, ACallback)
     return r
 
 # 注销canfd发接
 def tsapp_unregister_event_canfd(AHandle: c_size_t, ACallback: OnTx_RxFUNC_CANFD):
+    """
+    unregister canfd event
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_CANFD): function
+
+    Returns:
+        error code
+    example:
+        def on_can(ACAN):
+            print(ACAN.contents.FData[0])
+            
+        on_can_event = OnTx_RxFUNC_CANFD(on_can)
+        tsapp_unregister_event_canfd(Handle,on_can_event)
+    """
     r = dll.tscan_unregister_event_canfd(AHandle, ACallback)
     return r
 
 def tsapp_register_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    """
+    register flexray event
+    Triggered when there is message transmission on the bus
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_Flexray): function
+
+    Returns:
+        error code
+    example:
+        def on_flexray(AFlexray):
+            print(AFlexray.contents.FData[0])
+            
+        on_flexray_event = OnTx_RxFUNC_Flexray(on_flexray)
+        tsapp_register_event_flexray(Handle,on_flexray_event)
+    """
     r = dll.tsflexray_register_event_flexray(AHandle, ACallback)
     return r
 
 
 # 注销flexray发接
 def tsapp_unregister_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    """
+    unregister flexray event
+
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_Flexray): function
+
+    Returns:
+        error code
+    example:
+        def on_flexray(AFlexray):
+            print(AFlexray.contents.FData[0])
+            
+        on_flexray_event = OnTx_RxFUNC_Flexray(on_flexray)
+        tsapp_unregister_event_flexray(Handle,on_flexray_event)
+    """
     r = dll.tsflexray_unregister_event_flexray(AHandle, ACallback)
     return r
 
 def tsapp_register_pretx_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    """
+    register pre tx flexray event
+    Sending a message will trigger and can modify the message data(use transmit_flexray trigger)
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_Flexray): function
+
+    Returns:
+        error code
+    example:
+        def on_flexray(AFlexray):
+            AFlexray.contents.FData[0] = 1 #All transmit tx message FData[0] will only be 1
+            if AFlexray.contents.FIdentifier == 1:
+                AFlexray.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_flexray_event = OnTx_RxFUNC_Flexray(on_flexray)
+        tsapp_register_pretx_event_flexray(Handle,on_flexray_event)
+    """
     r = dll.tsflexray_register_pretx_event_flexray(AHandle, ACallback)
     return r
 
 
 # 注销flexray预发送事件
 def tsapp_unregister_pretx_event_flexray(AHandle: c_size_t, ACallback: OnTx_RxFUNC_Flexray):
+    """
+    unregister pre tx flexray event
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_Flexray): function
+
+    Returns:
+        error code
+    example:
+        def on_flexray(AFlexray):
+            AFlexray.contents.FData[0] = 1 #All transmit tx message FData[0] will only be 1
+            if AFlexray.contents.FIdentifier == 1:
+                AFlexray.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_flexray_event = OnTx_RxFUNC_Flexray(on_flexray)
+        tsapp_unregister_pretx_event_flexray(Handle,on_flexray_event)
+    """
     r = dll.tsflexray_unregister_pretx_event_flexray(AHandle, ACallback)
     return r
 
 
 # 注册lin发 接事件
 def tsapp_register_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
+    """
+    register lin event
+    Triggered when there is message transmission on the bus
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_LIN): function
+
+    Returns:
+        error code
+    example:
+        def on_lin(ALIN):
+            print(ALIN.contents.FData[0])
+            
+        on_lin_event = OnTx_RxFUNC_LIN(on_lin)
+        tsapp_register_event_lin(Handle,on_flexray_event)
+    """
     r = dll.tslin_register_event_lin(AHandle, ACallback)
     return r
 
 
 # 注销lin发 接事件
 def tsapp_unregister_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
+    """
+    unregister lin event
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_LIN): function
+
+    Returns:
+        error code
+    example:
+        def on_lin(ALIN):
+            print(ALIN.contents.FData[0])
+            
+        on_lin_event = OnTx_RxFUNC_LIN(on_lin)
+        tsapp_unregister_event_lin(Handle,on_flexray_event)
+    """
     r = dll.tslin_unregister_event_lin(AHandle, ACallback)
     return r
 
 def tsapp_register_pretx_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
+    """
+    register pre tx lin event
+    Sending a message will trigger and can modify the message data(use transmit_flexray trigger)
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_LIN): function
+
+    Returns:
+        error code
+    example:
+        def on_lin(ALIN):
+            ALIN.contents.FData[0] = 1 #All transmit tx message FData[0] will only be 1
+            if ALIN.contents.FIdentifier == 1:
+                ALIN.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_lin_event = OnTx_RxFUNC_LIN(on_lin)
+        tsapp_register_pretx_event_lin(Handle,on_flexray_event)
+    """
     return dll.tslin_register_pretx_event_can(AHandle, ACallback)
 
 def tsapp_unregister_pretx_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_LIN):
+    """
+    unregister pre tx lin event
+    Sending a message will trigger and can modify the message data(use transmit_flexray trigger)
+    
+    Args:
+        AHandle (c_size_t): tsapp_connect retrun handle
+        ACallback (OnTx_RxFUNC_LIN): function
+
+    Returns:
+        error code
+    example:
+        def on_lin(ALIN):
+            ALIN.contents.FData[0] = 1 #All transmit tx message FData[0] will only be 1
+            if ALIN.contents.FIdentifier == 1:
+                ALIN.contents.FData[0] = 2  #only id=1 can message FData[0] will  be 2
+            
+        on_lin_event = OnTx_RxFUNC_LIN(on_lin)
+        tsapp_register_pretx_event_lin(Handle,on_flexray_event)
+        
+    """
     return dll.tslin_unregister_pretx_event_lin(AHandle, ACallback)
 
 # normal_rx_msg = queue.Queue(maxsize=0)
@@ -1857,7 +2171,6 @@ def tsapp_unregister_pretx_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_L
 #         normal_rx_msg.put(msg)
 class TSuds():
     msg_list = queue.Queue(maxsize=10000)
-
     def __init__(self, HwHandle, channel=0, dlc=8, request_id=0x1, respond_id=0x2, is_fd=False, is_std=True,
                  fuction_id=0x3, timeout=0.1, bitrate_switch=False):
         self.HwHandle = HwHandle
