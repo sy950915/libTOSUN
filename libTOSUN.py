@@ -686,7 +686,7 @@ def tsapp_connect(ADeviceSerial: str, AHandle: c_size_t):
     r = dll.tscan_connect(ADeviceSerial, byref(AHandle))
     return r
 
-def tscan_get_can_channel_count(ADeviceSerial)
+def tscan_get_can_channel_count(ADeviceSerial):
     """
     Args:
         AHandle (c_size_t): tsapp_connect retrun handle
@@ -704,7 +704,7 @@ def tscan_get_can_channel_count(ADeviceSerial)
     dll.tscan_get_can_channel_count(ADeviceSerial,byref(ACount))
     return ACount.value
 
-def tscan_get_lin_channel_count(ADeviceSerial)
+def tscan_get_lin_channel_count(ADeviceSerial):
     """
     Args:
         AHandle (c_size_t): tsapp_connect retrun handle
@@ -722,7 +722,7 @@ def tscan_get_lin_channel_count(ADeviceSerial)
     dll.tscan_get_lin_channel_count(ADeviceSerial,byref(ACount))
     return ACount.value
 
-def tscan_get_flexray_channel_count(ADeviceSerial)
+def tscan_get_flexray_channel_count(ADeviceSerial):
     """
     Args:
         AHandle (c_size_t): tsapp_connect retrun handle
