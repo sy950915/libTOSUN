@@ -24,7 +24,7 @@ import atexit
 #     if _arch == '64bit':
 #         from .linux.parse_xml import *
 
-initialize_lib_tsmaster(True,True)
+initialize_lib_tsmaster(True,True,False)
 
 
 

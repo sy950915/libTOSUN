@@ -659,12 +659,12 @@ def finalize_lib_tscan():
 
 
 # 初始化函数（是否使能fifo,是否濢 活极速模式）
-def initialize_lib_tsmaster(AEnableFIFO: c_bool, AEnableTurbe: c_bool):
+def initialize_lib_tsmaster(AEnableFIFO: c_bool, AEnableError: c_bool,AUseHWTime:c_bool):
     """
     Initialization function 
     There is no need to call it now because I will automatically call it when the program loads
     """
-    dll.initialize_lib_tscan(AEnableFIFO, AEnableTurbe, False)
+    dll.initialize_lib_tscan(AEnableFIFO, AEnableError, AUseHWTime)
 
 
 # connect hw
