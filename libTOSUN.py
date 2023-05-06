@@ -664,7 +664,7 @@ def initialize_lib_tsmaster(AEnableFIFO: c_bool, AEnableTurbe: c_bool):
     Initialization function 
     There is no need to call it now because I will automatically call it when the program loads
     """
-    dll.initialize_lib_tscan(AEnableFIFO, AEnableTurbe, True)
+    dll.initialize_lib_tscan(AEnableFIFO, AEnableTurbe, False)
 
 
 # connect hw
