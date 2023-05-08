@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-04-12 12:19:05
+LastEditTime: 2023-05-08 10:31:49
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 
@@ -16,6 +16,7 @@ from can.message import Message as Message
 import can
 import os
 import queue
+import .parse_xml
 
 # _curr_path = os.path.split(os.path.realpath(__file__))[0]
 _curr_path = os.path.dirname(__file__)
