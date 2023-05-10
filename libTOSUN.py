@@ -16,7 +16,6 @@ from can.message import Message as Message
 import can
 import os
 import queue
-import parse_xml
 
 # _curr_path = os.path.split(os.path.realpath(__file__))[0]
 _curr_path = os.path.dirname(__file__)
