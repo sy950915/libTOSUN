@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-05-10 10:42:10
+LastEditTime: 2023-05-11 10:17:02
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 import xml.etree.ElementTree as ET
@@ -2516,7 +2516,9 @@ class TSuds():
                         snCnt = 0x1
                         rxIndex = len(msgs) - 2
                         while rxIndex < ResSize and time.perf_counter() - StartTime < self.timeout:
-                            if not self.msg_list.empty():
+                            if len(Datalist) == ResSize:
+                                return 0, Datalist
+                            elif not self.msg_list.empty():
                                 msgs = self.msg_list.get()
                                 N_PCItype = msgs[0] >> 4
                                 if N_PCItype != 2:
@@ -2534,6 +2536,8 @@ class TSuds():
                                         for i in range(ResSize - len(Datalist)):
                                             Datalist.append(msgs[i + 1])
                                         StartTime = time.perf_counter()
+                                    if len(Datalist) == ResSize:
+                                        return 0, Datalist
                                 else:
                                     return 0, Datalist
         return 161, Datalist
