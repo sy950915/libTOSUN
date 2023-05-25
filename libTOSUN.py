@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-05-11 10:17:02
+LastEditTime: 2023-05-25 11:02:05
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 import xml.etree.ElementTree as ET
@@ -295,6 +295,7 @@ class Fibex_parse():
                             self.Ecus[ecu_name]['TX_Frame'].append(_tx_frame)
                         del Trgger_ID,_tx_frame
                     del ecu_name
+
 class CHANNEL_INDEX():
     """
     channle index 
@@ -318,7 +319,6 @@ class READ_TX_RX_DEF():
     '''
     ONLY_RX_MESSAGES:receive msg inclued tx and rx msg   
     TX_RX_MESSAGES: only receive rx msg
-    
     receive function:
     tsfifo_receive_can_msgs           #receive can message
     tsfifo_receive_canfd_msgs         #receive canfd message include can message
@@ -2424,26 +2424,100 @@ def tsapp_unregister_pretx_event_lin(AHandle: c_size_t, ACallback: OnTx_RxFUNC_L
     """
     return dll.tslin_unregister_pretx_event_lin(AHandle, ACallback)
 
-# normal_rx_msg = queue.Queue(maxsize=0)
-# error_rx_msg = queue.Queue(maxsize=0)
-# normal_rx_tx_msg = queue.Queue(maxsize=0)
-# error_rx_tx_msg = queue.Queue(maxsize=0)
-#
-# def on_tx_rx_event(ACAN):
-#     if ACAN.contents.FProperties == 0x80:
-#         msg = Message(timestamp=blf_start_time + float(ACAN.contents.FTimeUs) / 1000000, arbitration_id=0xFFFFFFFF,
-#                       is_error_frame=True, data=[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff])
-#         error_rx_msg.put(msg)
-#         error_rx_tx_msg.put(msg)
-#     elif ACAN.contents.FProperties & 1:
-#         msg = tosun_convert_msg(ACAN.contents)
-#         error_rx_tx_msg.put(msg)
-#         normal_rx_tx_msg.put(msg)
-#     else:
-#         msg = tosun_convert_msg(ACAN.contents)
-#         error_rx_msg.put(msg)
-#         error_rx_tx_msg.put(msg)
-#         normal_rx_msg.put(msg)
+if 'windows' in _os.lower():
+    def tsdiag_can_create(HwHandle,pDiagModuleIndex: c_int32, AChnIndex: CHANNEL_INDEX, ASupportFDCAN: c_byte,AMaxDLC: c_byte,ARequestID: c_uint32, ARequestIDIsStd: bool, AResponseID: c_uint32, AResponseIDIsStd: bool,AFunctionID: c_uint32, AFunctionIDIsStd: bool):
+        """
+        udsHandle = c_int8(0)
+        ChnIndex = CHANNEL_INDEX.CHN1
+        ASupportFD  = c_byte(1)
+        AMaxdlc = c_byte(8)
+        reqID = c_int32(0x7e0)
+        ARequestIDIsStd = False
+        resID = c_int32(0x7e3)
+        resIsStd = False
+        AFctID = c_int32(0x7df)
+        fctIsStd = False
+        tsdiag_can_create(HWHandle,udsHandle,ChnIndex,ASupportFD,AMaxdlc,reqID,resIsStd,resID,resIsStd,AFctID,fctIsStd)
+        """
+        try:
+            dlc = DLC_DATA_BYTE_CNT.index(AMaxDLC)
+        except:
+            dlc = AMaxDLC
+        r = dll.tsdiag_can_create(byref(pDiagModuleIndex), AChnIndex, ASupportFDCAN, dlc, ARequestID,
+                                    ARequestIDIsStd,
+                                    AResponseID, AResponseIDIsStd, AFunctionID, AFunctionIDIsStd)
+        dll.tsdiag_can_attach_to_tscan_tool(pDiagModuleIndex, HwHandle)
+        return r
+
+    def tsdiag_can_delete(pDiagModuleIndex: c_int32):
+        """
+        udsHandle = c_int8(0)
+        ChnIndex = CHANNEL_INDEX.CHN1
+        ASupportFD  = c_byte(1)
+        AMaxdlc = c_byte(8)
+        reqID = c_int32(0x7e0)
+        ARequestIDIsStd = False
+        resID = c_int32(0x7e3)
+        resIsStd = False
+        AFctID = c_int32(0x7df)
+        fctIsStd = False
+        tsdiag_can_create(HWHandle,udsHandle,ChnIndex,ASupportFD,AMaxdlc,reqID,resIsStd,resID,resIsStd,AFctID,fctIsStd)
+        tsdiag_can_delete(udsHandle)
+        """
+        return dll.tsdiag_can_delete(pDiagModuleIndex)
+
+    def tsdiag_can_delete_all():
+
+        return dll.tsdiag_can_delete_all()
+
+    def tsdiag_can_session_control(pDiagModuleIndex: c_int32,ASubSession:c_uint8):
+        """
+        10服务
+        """
+        return dll.tsdiag_can_session_control(pDiagModuleIndex,ASubSession)
+
+    def tsdiag_can_routine_control(pDiagModuleIndex: c_int32,AARoutineControlType:c_uint8,ARoutintID:c_uint16):
+        """
+        31服务
+
+        tsdiag_can_session_control(udsHandle,c_uint8(1),c_uint16(0xf100)) 
+
+        """
+        return dll.tsdiag_can_routine_control(pDiagModuleIndex,AARoutineControlType,ARoutintID)
+
+    def tsdiag_can_security_access_request_seed(pDiagModuleIndex: c_int32,ALevel:c_int32,ASeed:c_char_p,ASeedSize:c_int32):
+        """27 01 request seed"""
+        return dll.tsdiag_can_security_access_request_seed(pDiagModuleIndex,ALevel,ASeed,byref(ASeedSize))
+
+    def tsdiag_can_security_access_send_key(pDiagModuleIndex: c_int32,ALevel:c_int32,ASeed:c_char_p,ASeedSize:c_int32):
+        """27 02 send key"""
+        return dll.tsdiag_can_security_access_send_key(pDiagModuleIndex,ALevel,ASeed,ASeedSize)
+
+    def tsdiag_can_request_download(pDiagModuleIndex: c_int32,AMemAddr:c_uint32,AMemSize:c_uint32)
+        """34 服务"""
+        return dll.tsdiag_can_request_download(pDiagModuleIndex,AMemAddr,AMemSize)
+
+    def tsdiag_can_request_upload(pDiagModuleIndex: c_int32,AMemAddr:c_uint32,AMemSize:c_uint32)
+        """35 服务"""
+        return dll.tsdiag_can_request_download(pDiagModuleIndex,AMemAddr,AMemSize)
+
+    def tsdiag_can_transfer_data(pDiagModuleIndex: c_int32,ASourceDatas:c_char_p,ASize:c_int32,AReqCase:c_int32):
+        """36 服务"""
+        return dll.tsdiag_can_transfer_data(pDiagModuleIndex,ASourceDatas,ASize,AReqCase)
+
+    def tsdiag_can_request_transfer_exit(pDiagModuleIndex:c_int32):
+        """37 服务"""
+        return dll.tsdiag_can_request_transfer_exit(pDiagModuleIndex)
+
+    def tsdiag_can_write_data_by_identifier(pDiagModuleIndex: c_int32,ADataIdentifier:c_uint16,AWriteData:c_char_p,AWriteDataSize:c_int32):
+        """2e 服务"""
+        return dll.tsdiag_can_write_data_by_identifier(pDiagModuleIndex,ADataIdentifier,AWriteData,AWriteDataSize)
+
+    def tsdiag_can_read_data_by_identifier(pDiagModuleIndex: c_int32,ADataIdentifier:c_uint16,AReturnArray:c_char_p,AReturnArraySize:c_int32):
+        """22 服务"""
+        return dll.tsdiag_can_read_data_by_identifier(pDiagModuleIndex,ADataIdentifier,AReturnArray,byref(AReturnArraySize))
+
+
 class TSuds():
     msg_list = queue.Queue(maxsize=10000)
     def __init__(self, HwHandle, channel=0, dlc=8, request_id=0x1, respond_id=0x2, is_fd=False, is_std=True,
@@ -2935,7 +3009,6 @@ class TSMasterDevice():
     db = None
     onRXTX_EVENT = OnTx_RxFUNC_CANFD()
     start_receive = False
-
     def __init__(self, configs: [dict], hwserial: bytes = b'',
                 # is_recv_error: bool = False,
                 is_include_tx: bool = False,
@@ -2943,48 +3016,13 @@ class TSMasterDevice():
                 dbc: bytes = b'',
                 filter:dict={}):
         self.filter = filter
-        # self.__include_error_message = is_recv_error
         self.include_own_message = is_include_tx
-        # self.start_receive = is_start_recv
         self.configs = configs
         self.hwserial = hwserial
         self.dbc = dbc
-        # initialize_lib_tsmaster(True, False)
         if isinstance(hwserial, str):
             self.hwserial = hwserial.encode('utf8')
         self.connect()
-        # ret = tsapp_connect(hwserial, self.HwHandle)
-        # if ret == 0 or ret == 5:
-        #     self.__hw_isconnect = True
-        #     for index, congfig in enumerate(configs):
-        #         self.channel_list.append(
-        #             congfig['FChannel'] if 'FChannel' in congfig else index)
-
-        #         self.Rate_baudrate.append(
-        #             congfig['rate_baudrate'] if 'rate_baudrate' in congfig else 500)
-
-        #         self.data_baudrate.append(
-        #             congfig['data_baudrate'] if 'data_baudrate' in congfig else 2000)
-
-        #         self.enable_120hm.append(
-        #             congfig['enable_120hm'] if 'enable_120hm' in congfig else True)
-
-        #         if 'is_fd' in congfig and congfig['is_fd']:
-        #             tsapp_configure_baudrate_canfd(self.HwHandle, self.channel_list[index], self.Rate_baudrate[index],
-        #                                         self.data_baudrate[index],
-        #                                         TLIBCANFDControllerType.lfdtISOCAN,
-        #                                         TLIBCANFDControllerMode.lfdmNormal,
-        #                                         self.enable_120hm[index])
-        #         else:
-        #             tsapp_configure_baudrate_can(self.HwHandle, self.channel_list[index], self.Rate_baudrate[index],
-        #                                         self.enable_120hm[index])
-        #     self.ONRxTx_Event = OnTx_RxFUNC_CANFD(self.on_tx_rx_event)
-        #     ret = tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
-        #     self.db = DBC_parse(dbcfile=dbc)
-        # else:
-        #     self.__hw_isconnect = False
-        #     raise "HW CONNECT FAILED"
-
     def connect(self):
         ret = tsapp_connect(self.hwserial, self.HwHandle)
         if ret == 0 or ret == 5:
@@ -3018,25 +3056,18 @@ class TSMasterDevice():
         else:
             self.__hw_isconnect = False
             raise "HW CONNECT FAILED"
-
-
     def load_dbc(self, dbc):
         self.db.load_dbc(dbc)
-
     def unload_dbc_all(self):
         self.db.dbc_list_by_id.clear()
         self.db.dbc_list_by_name.clear()
         self.db.dbc_signal_list.clear()
-
     def set_singal_value_by_id(self, channel, message_id, singaldict: [dict]):
         return self.db.set_signal_value_by_id(channel, message_id, singaldict)
-
     def set_singal_value_by_name(self, channel, message_name, singaldict: [dict]):
         return self.db.set_signal_value_by_name(channel, message_name, singaldict)
-
     def get_signal_value(self, msg, signal_name):
         return self.db.get_signal_value(msg, signal_name)
-
     def send_msg(self, msg, timeout: Optional[float] = 0.1, sync: bool = False, is_cyclic: bool = False):
         # timeout = timeout * 1000
         if self.__hw_isconnect:
@@ -3081,8 +3112,6 @@ class TSMasterDevice():
         return None
         return self.msg_list.get() if not self.msg_list.empty() else None
 
-        
-    
     def on_tx_rx_event(self, ACAN):
         if self.start_receive:
             msg_channel = self.filter.get('msg_channel',None)
