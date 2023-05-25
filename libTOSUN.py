@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-05-25 11:02:05
+LastEditTime: 2023-05-25 12:19:58
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 import xml.etree.ElementTree as ET
@@ -2493,13 +2493,13 @@ if 'windows' in _os.lower():
         """27 02 send key"""
         return dll.tsdiag_can_security_access_send_key(pDiagModuleIndex,ALevel,ASeed,ASeedSize)
 
-    def tsdiag_can_request_download(pDiagModuleIndex: c_int32,AMemAddr:c_uint32,AMemSize:c_uint32)
+    def tsdiag_can_request_download(pDiagModuleIndex: c_int32,AMemAddr:c_uint32,AMemSize:c_uint32):
         """34 服务"""
         return dll.tsdiag_can_request_download(pDiagModuleIndex,AMemAddr,AMemSize)
 
-    def tsdiag_can_request_upload(pDiagModuleIndex: c_int32,AMemAddr:c_uint32,AMemSize:c_uint32)
+    def tsdiag_can_request_upload(pDiagModuleIndex: c_int32,AMemAddr:c_uint32,AMemSize:c_uint32):
         """35 服务"""
-        return dll.tsdiag_can_request_download(pDiagModuleIndex,AMemAddr,AMemSize)
+        return dll.tsdiag_can_request_upload(pDiagModuleIndex,AMemAddr,AMemSize)
 
     def tsdiag_can_transfer_data(pDiagModuleIndex: c_int32,ASourceDatas:c_char_p,ASize:c_int32,AReqCase:c_int32):
         """36 服务"""
