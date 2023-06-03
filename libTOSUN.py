@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-05-25 12:19:58
+LastEditTime: 2023-06-03 14:05:36
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 import xml.etree.ElementTree as ET
@@ -2696,7 +2696,8 @@ class DBC_parse():
     dbc_list_by_id = {}
 
     def __init__(self, dbcfile=''):
-        self.load_dbc(dbcfile)
+        if dbcfile !='':
+            self.load_dbc(dbcfile)
 
     def load_dbc(self, dbcfile):
         '''return db index'''
@@ -2720,21 +2721,8 @@ class DBC_parse():
             except Exception as e:
                 print(e)
 
-    def __change_msg(self, msg):
-        if msg.data == b'' or msg.dlc != self.dbc_list_by_id[msg.arbitration_id].length:
-            datalist = []
-            msg.is_fd = self.dbc_list_by_id[msg.arbitration_id]._is_fd
-            msg.is_extended_id = self.dbc_list_by_id[msg.arbitration_id]._is_extended_frame
-            msg.dlc = self.dbc_list_by_id[msg.arbitration_id]._length
-            msg.bitrate_switch = self.dbc_list_by_id[msg.arbitration_id]._bitrate_switch
-            for i in range(msg.dlc):
-                datalist.append(0)
-            msg.data = datalist
-            del datalist
-
     def __change_signal_value(self, msg, signal_dict: dict):
         try:
-            self.__change_msg(msg)
             msg_data_dict = self.dbc_list_by_id[msg.arbitration_id].decode(
                 data=msg.data)
             for key in signal_dict:
@@ -2749,15 +2737,9 @@ class DBC_parse():
         except Exception as e:
             print(e)
 
-    def set_signal_value_by_id(self, channel_index, msg_id, signal_dict: dict):
-        if msg_id in self.dbc_list_by_id:
-            msg = Message(arbitration_id=msg_id, channel=channel_index)
-            return msg_convert_tosun(self.__change_signal_value(msg, signal_dict))
-
-    def set_signal_value_by_name(self, channel_index, msgname: str, signal_dict: dict):
-        if msgname in self.dbc_list_by_name:
-            msg = Message(
-                arbitration_id=self.dbc_list_by_name[msgname]._frame_id, channel=channel_index)
+    def set_signal_value(self, msg:TLIBCAN or TLIBCANFD or Message, signal_dict: dict):
+        msg = tosun_convert_msg(msg)
+        if msg.arbitration_id in self.dbc_list_by_id:
             return msg_convert_tosun(self.__change_signal_value(msg, signal_dict))
 
     def get_signal_value(self, msg, signalname):
@@ -3020,6 +3002,7 @@ class TSMasterDevice():
         self.configs = configs
         self.hwserial = hwserial
         self.dbc = dbc
+        self.db = DBC_parse()
         if isinstance(hwserial, str):
             self.hwserial = hwserial.encode('utf8')
         self.connect()
@@ -3052,7 +3035,7 @@ class TSMasterDevice():
             # tsapp_register_event_canfd(self.HwHandle, self.ONRxTx_Event)
             # self.start_recv_time = time.perf_counter()
             if self.dbc!=b'':
-                self.db = DBC_parse(dbcfile=self.dbc)
+                self.load_dbc(self.dbc)
         else:
             self.__hw_isconnect = False
             raise "HW CONNECT FAILED"
@@ -3062,10 +3045,8 @@ class TSMasterDevice():
         self.db.dbc_list_by_id.clear()
         self.db.dbc_list_by_name.clear()
         self.db.dbc_signal_list.clear()
-    def set_singal_value_by_id(self, channel, message_id, singaldict: [dict]):
-        return self.db.set_signal_value_by_id(channel, message_id, singaldict)
-    def set_singal_value_by_name(self, channel, message_name, singaldict: [dict]):
-        return self.db.set_signal_value_by_name(channel, message_name, singaldict)
+    def set_singal_value(self, msg, singaldict:dict):
+        return self.db.set_signal_value(msg, singaldict)
     def get_signal_value(self, msg, signal_name):
         return self.db.get_signal_value(msg, signal_name)
     def send_msg(self, msg, timeout: Optional[float] = 0.1, sync: bool = False, is_cyclic: bool = False):
@@ -3184,5 +3165,22 @@ class TSMasterDevice():
     def shut_down(self):
         tsapp_disconnect_by_handle(self.HwHandle)
         self.msg_list.queue.clear()
-        
+
+if __name__ == '__main__':
+    initialize_lib_tsmaster(True,True,False)
+    configs = [{'FChannel': 0, 'rate_baudrate': 500,
+    'data_baudrate': 2000, 'enable_120hm': True, 'is_fd': True}, {'FChannel': 1, 'rate_baudrate': 500,
+    'data_baudrate': 2000, 'enable_120hm': True, 'is_fd': True}]
+
+    handle =TSMasterDevice(configs,is_include_tx=True,dbc=r'D:\IDE\window_linux_Rep\python\Py_TSMaster\CAN_FD_Powertrain.dbc')
+
+    c = TLIBCANFD(0,12,0x701,1,1,[])
+
+    print(handle.get_signal_value(c,None))
+
+    c = handle.set_singal_value(c,{'FallbackMessage_Byte_00_05': 1000, 'FallbackMessage_Byte_06_10': 2000})
+
+    print(handle.get_signal_value(c,None))
+
+    handle.send_msg(c)
 
