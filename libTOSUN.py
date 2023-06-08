@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-06-08 13:04:59
+LastEditTime: 2023-06-08 15:28:42
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 import xml.etree.ElementTree as ET
@@ -1534,7 +1534,7 @@ def tsapp_transmit_canfd_async(AHandle: c_size_t, Msg: TLIBCANFD):
 
 
 # 同步发  canfd报文
-def tsapp_transmit_canfd_sync(AHandle: c_size_t, Msg: TLIBCANFD, ATimeoutMS: c_int32):
+def tsapp_transmit_canfd_sync(AHandle: c_size_t, Msg: TLIBCANFD, ATimeoutMS: c_uint32):
     """
     sync send canfd msg
 
@@ -1548,8 +1548,8 @@ def tsapp_transmit_canfd_sync(AHandle: c_size_t, Msg: TLIBCANFD, ATimeoutMS: c_i
     Returns:
         error code
     """
-    if not isinstance(ATimeoutMS, c_int32):
-        ATimeoutMS = c_float(ATimeoutMS)
+    if not isinstance(ATimeoutMS, c_uint32):
+        ATimeoutMS = c_uint32(ATimeoutMS)
     r = dll.tscan_transmit_canfd_sync(AHandle, byref(Msg), ATimeoutMS)
     if r != 0:
         print("msg send failed")
