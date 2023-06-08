@@ -2,7 +2,7 @@
 Author: seven 865762826@qq.com
 Date: 2022-12-24 12:29:39
 LastEditors: seven 865762826@qq.com
-LastEditTime: 2023-06-03 14:05:36
+LastEditTime: 2023-06-08 13:04:59
 FilePath: \window_linux_Repd:\Envs\python39_32\Lib\site-packages\libTOSUN\libTOSUN.py
 '''
 import xml.etree.ElementTree as ET
@@ -206,7 +206,10 @@ class Fibex_parse():
                             # self.Frames[FRAME_NAME][self.Pdus[PDU_REF]['PDU_Name']]['SIGNALS'] = self.Pdus[PDU_REF]['SIGNALS']
                             del PDU_REF,PDU_1
                     else:
-                        self.Frames[FRAME_NAME]['SIGNALS'] = self.Pdus[FRAME_ID]['SIGNALS']
+                        try:
+                            self.Frames[FRAME_NAME]['SIGNALS'] = self.Pdus[FRAME_ID]['SIGNALS']
+                        except:
+                            pass
                     del FRAME_NAME,FRAME_ID,_FDLC
             ECUS = ELEMENTS.findall('{http://www.asam.net/xml/fbx}ECUS/{http://www.asam.net/xml/fbx}ECU')
             if ECUS != None:  
@@ -1484,15 +1487,17 @@ def tsapp_transmit_can_async(AHandle: c_size_t, Msg: TLIBCAN):
     return r
 
 
+
+
 # 同步发  can报文
-def tsapp_transmit_can_sync(AHandle: c_size_t, Msg: TLIBCAN, ATimeoutMS: c_int32):
+def tsapp_transmit_can_sync(AHandle: c_size_t, Msg: TLIBCAN, ATimeoutMS: c_uint32):
     """
     sync send can msg
 
     Args:
         AHandle (c_size_t): tsapp_connect retrun handle
         Msg (TLIBCAN): can msg
-        ATimeoutMS (c_int32): timeout in ms
+        ATimeoutMS (c_uint32): timeout in ms
 
     Returns:
         error code
@@ -1500,8 +1505,8 @@ def tsapp_transmit_can_sync(AHandle: c_size_t, Msg: TLIBCAN, ATimeoutMS: c_int32
         msg = TLIBCAN(FIdentifier = 1,FData=[1,2,3,4,5,6,7,8])
         tsapp_transmit_can_sync(handle,msg,100)
     """
-    if not isinstance(ATimeoutMS, c_int32):
-        ATimeoutMS = c_float(ATimeoutMS)
+    if not isinstance(ATimeoutMS, c_uint32):
+        ATimeoutMS = c_uint32(ATimeoutMS)
     r = dll.tscan_transmit_can_sync(AHandle, byref(Msg), ATimeoutMS)
     if r != 0:
         print("msg send failed")
